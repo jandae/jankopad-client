@@ -4,6 +4,8 @@ import psutil
 
 from pynput.keyboard import Key, Controller
 
+from win10toast import ToastNotifier
+
 import random
 import os
 import sys
@@ -40,11 +42,18 @@ prev_p = 9999
 global profile
 profile = 0
 
-# keyboarda = Controller()
+os.system('nircmd setdefaultsounddevice "Realtek"')
+device = 1
+
+vol_mode = 0
 
 # from pynput.mouse import Button, Controller
 
 # mouse = Controller()
+
+toast = ToastNotifier()
+
+
 
 
 print('hello')
@@ -137,27 +146,29 @@ def f17():
     timer = Timer(1.5, lambda: keyboard.press_and_release('ctrl+f3'))
     timer.start()
 
+def getMusicVol():
+    volume = os.system('F:\Scripts\Volume\SoundVolumeView.exe /GetPercent chrome.exe')
+    volume = int(volume/10)    
+    toast.show_toast(
+        str(volume),
+        "Music Volume",
+        duration = 0.5,
+        icon_path = "F:\Scripts\jankopad\icon.ico",
+        threaded = True,
+    )
+
 def f18():
-    # print("f18")
-    check_window()
-    print(profile)
-    # keyboard.press_and_release('=')
-    keyboarda.press('=')
-    # if(profile == 1):
-    #     print('=')
-    # else:
     os.system('nircmd changeappvolume chrome.exe -0.01')            
     os.system('nircmd changeappvolume Music.UI.exe -0.01') 
+    
+    getMusicVol()
 
 def f19():
-    # print("f19")
-    # keyboarda.press('-')
-    # check_window()
-    # keyboard.press_and_release('ctrl+shift+-')
-    # if(profile == 1):
-    # else:
     os.system('nircmd changeappvolume chrome.exe +0.01')                
     os.system('nircmd changeappvolume Music.UI.exe +0.01') 
+
+    getMusicVol()
+    
 
 def f20():
     # print("f20")
@@ -167,18 +178,24 @@ def f20():
 def f21():
     # print("f21")
     # mouse.scroll(0, 2)
+    # keyboard.press_and_release('left')
     os.system('nircmd changeappvolume focused -0.05')
+    os.system('nircmd changeappvolume SoTGame.exe -0.05')        
 
 def sf21():    
-    os.system('nircmd changeappvolume discord.exe -0.05')
+    print('discord-')
+    os.system('nircmd changeappvolume Discord.exe -0.05')
 
 def f22():
     # print("f22")
     # mouse.scroll(0, -2)
+    # keyboard.press_and_release('right')
     os.system('nircmd changeappvolume focused +0.05') 
+    os.system('nircmd changeappvolume SoTGame.exe +0.05')
 
-def sf22():
-    os.system('nircmd changeappvolume discord.exe +0.05')    
+def sf22():    
+    print('discord+')
+    os.system('nircmd changeappvolume Discord.exe +0.05')    
 
 def f23():
     # print("f23")
@@ -209,6 +226,31 @@ def f4():
 def f5():
     print('f5')
 
+def f6():    
+    print('f6')    
+    # global vol_mode
+    # vol_mode = 1
+    # timer = Timer(5, setVolMode)
+    # timer.start()     
+
+    # keyboard.remap_key(-174, 'ctrl+alt+[')
+    # keyboard.remap_key(-175, 'ctrl+alt+]')    
+    # keyboard.remap_key('a', 's')    
+
+
+def setVolMode():
+    global vol_mode
+    keyboard.unhook(-174)
+    keyboard.unhook(-175)
+    vol_mode = 0
+
+def left():
+    print('left')
+
+def right():
+    print('right')
+
+
 # keyboard.wait()
 keyboard.add_hotkey('f13', f13)
 keyboard.add_hotkey('f14', f14)
@@ -229,10 +271,47 @@ keyboard.add_hotkey('ctrl+alt+f2', f2)
 keyboard.add_hotkey('ctrl+alt+f3', f3)
 keyboard.add_hotkey('ctrl+alt+f4', f4)
 keyboard.add_hotkey('ctrl+alt+f5', f5)
+keyboard.add_hotkey('ctrl+alt+f6', f6)
+keyboard.add_hotkey('ctrl+alt+[', left)
+keyboard.add_hotkey('ctrl+alt+]', right)
+
+# keyboard.remap_hotkey('ctrl+x', 'ctrl+up')
 
 while True:
+    # print(keyboard.read_key())
     event = keyboard.read_event()
-    print(event.name)
+    # print(event.scan_code)
+    
+
+    if(event.event_type == keyboard.KEY_UP):
+        print(event.name)
+
+        if(event.name == 'browser stop' or event.name == 'browser back'):
+            devices = [
+                "Realtek",
+                "34UW100",
+                "Mi TV",
+                "GS3"
+            ]  
+            if(event.name == 'browser stop'):
+                if(device == 3):
+                    device = 0
+                elif(device <3):
+                    device = device+1        
+            elif(event.name == 'browser back'):
+                if(device == 0):
+                    device = 3
+                elif(device > 0):
+                    device = device-1        
+            print(device)            
+            
+            os.system('nircmd setdefaultsounddevice "'+devices[device]+'"')
+            playsound(r'F:\\soundpad\\tesla_ding.wav', False)
+            sount = Timer(0.3, lambda: playsound(r'F:\\soundpad\\tesla_ding.wav', False))
+            sount.start()   
+        
+
+
     
 
 # keyboard.add_hotkey('ctrl+alt+p', lambda: print('alt p yo!'))
